@@ -66,16 +66,28 @@ const StyledKeyboard = styled.div`
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     margin: 20px 0;
 
+    @media (max-width: 768px) {
+        padding: 15px;
+    }
+
     .keyboard-title {
         font-size: 1.2rem;
         font-weight: 600;
         color: ${p => p.theme.textColor};
         margin-bottom: 10px;
+
+        @media (max-width: 768px) {
+            font-size: 1rem;
+        }
     }
 
     .keyboard-grid {
         display: flex;
         gap: 8px;
+
+        @media (max-width: 768px) {
+            gap: 5px;
+        }
     }
 `;
 
@@ -92,6 +104,11 @@ const KeyCap = styled.div`
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
+    @media (max-width: 768px) {
+        width: 45px;
+        height: 45px;
+    }
+
     &.active {
         background: ${p => p.theme.primaryColor};
         border-color: ${p => p.theme.primaryColor};
@@ -104,6 +121,10 @@ const KeyCap = styled.div`
         font-size: 1.2rem;
         font-weight: bold;
         color: ${p => p.theme.textColor};
+
+        @media (max-width: 768px) {
+            font-size: 1rem;
+        }
     }
 
     .mapped-key {
@@ -111,6 +132,10 @@ const KeyCap = styled.div`
         color: ${p => p.theme.textColorFaded};
         margin-top: 2px;
         text-transform: uppercase;
+
+        @media (max-width: 768px) {
+            font-size: 0.6rem;
+        }
     }
 
     &.active .artsey-key,

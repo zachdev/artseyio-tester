@@ -65,10 +65,18 @@ const StyledApp = styled.div`
     padding: 25px;
     min-height: 100vh;
 
+    @media (max-width: 768px) {
+        padding: 15px;
+    }
+
     #logo {
         width: 120px;
         margin-bottom: 20px;
         filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+
+        @media (max-width: 768px) {
+            width: 80px;
+        }
     }
 `;
 
@@ -84,6 +92,10 @@ const Header = styled.header`
         -webkit-text-fill-color: transparent;
         background-clip: text;
         margin-bottom: 10px;
+
+        @media (max-width: 768px) {
+            font-size: 2rem;
+        }
     }
 `;
 

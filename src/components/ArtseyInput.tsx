@@ -170,6 +170,12 @@ const StyledArtseyInput = styled.div`
         min-height: 200px;
         transition: all 0.3s ease;
 
+        @media (max-width: 768px) {
+            font-size: 1.2rem;
+            padding: 20px;
+            min-height: 150px;
+        }
+
         &:focus {
             box-shadow: 0 4px 16px rgba(0, 104, 180, 0.2);
             border: 2px solid ${p => p.theme.primaryColor};
