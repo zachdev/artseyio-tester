@@ -1,6 +1,6 @@
 import randomWords from "random-words";
 import styled from "styled-components";
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useEffect, useRef, useState, useCallback } from 'react';
 import { faSync } from '@fortawesome/free-solid-svg-icons';
 
 import IconButton from './IconButton';
@@ -32,37 +32,7 @@ export const ArtseyInput: FC<ArtseyInputComponentProps> = (props: ArtseyInputCom
     
     const getArtseyValue = useKeyMapper(props.keymap);
 
-    useEffect(() => reset(), []);        
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if(keyQueue.length !== 0) {
-                let joinedWordList = wordList.join(" ");
-                let artsyKey = getArtseyValue(keyQueue);
-
-                if(artsyKey === "Backspace" && enteredKeys.length > 0) {
-                    setEnteredKeys(prev => [...prev.slice(0, prev.length - 1)]);
-                    setCaretPos(caretPos - 1);
-                }
-                else if(
-                    artsyKey !== undefined && artsyKey !== "Backspace"
-                    && ((joinedWordList.split("")[caretPos] === " " && artsyKey === "Space") || joinedWordList.split("")[caretPos] !== " ")
-                ) {
-                        setEnteredKeys(prev => [...prev, artsyKey as string]);
-                        setCaretPos(caretPos + 1);
-                        
-                        // Check if word is complete
-                        if (artsyKey === "Space" || joinedWordList.split("")[caretPos + 1] === " " || caretPos + 1 >= joinedWordList.length) {
-                            checkWordCompletion();
-                        }
-                }                
-                setKeyQueue([]);
-                setActiveKeys(new Set());
-            }
-        }, props.keyTimeout);
-        return () => clearInterval(interval);
-    }, [keyQueue, enteredKeys, caretPos, getArtseyValue, wordList, props.keyTimeout]);
-
-    const checkWordCompletion = () => {
+    const checkWordCompletion = useCallback(() => {
         // Only check word completion when we've just typed a space or reached end of text
         let joinedWordList = wordList.join(" ");
         if (caretPos === 0) return;
@@ -92,7 +62,37 @@ export const ArtseyInput: FC<ArtseyInputComponentProps> = (props: ArtseyInputCom
                 setCurrentStreak(0);
             }
         }
-    };
+    }, [wordList, caretPos, enteredKeys]);
+
+    useEffect(() => reset(), []);        
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if(keyQueue.length !== 0) {
+                let joinedWordList = wordList.join(" ");
+                let artsyKey = getArtseyValue(keyQueue);
+
+                if(artsyKey === "Backspace" && enteredKeys.length > 0) {
+                    setEnteredKeys(prev => [...prev.slice(0, prev.length - 1)]);
+                    setCaretPos(caretPos - 1);
+                }
+                else if(
+                    artsyKey !== undefined && artsyKey !== "Backspace"
+                    && ((joinedWordList.split("")[caretPos] === " " && artsyKey === "Space") || joinedWordList.split("")[caretPos] !== " ")
+                ) {
+                        setEnteredKeys(prev => [...prev, artsyKey as string]);
+                        setCaretPos(caretPos + 1);
+                        
+                        // Check if word is complete
+                        if (artsyKey === "Space" || joinedWordList.split("")[caretPos + 1] === " " || caretPos + 1 >= joinedWordList.length) {
+                            checkWordCompletion();
+                        }
+                }                
+                setKeyQueue([]);
+                setActiveKeys(new Set());
+            }
+        }, props.keyTimeout);
+        return () => clearInterval(interval);
+    }, [keyQueue, enteredKeys, caretPos, getArtseyValue, wordList, props.keyTimeout, checkWordCompletion]);
 
     const reset = () => {
         setEnteredKeys([]);
