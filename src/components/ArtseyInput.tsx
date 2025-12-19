@@ -6,6 +6,8 @@ import { faSync } from '@fortawesome/free-solid-svg-icons';
 import IconButton from './IconButton';
 import useKeyMapper from '../effects/KeyMapperEffect';
 import { KeyMapDefinition } from '../model/KeyMapDefinition';
+import StatsDisplay from './StatsDisplay';
+import VisualKeyboard from './VisualKeyboard';
 
 interface ArtseyInputComponentProps {
     keymap: KeyMapDefinition;
@@ -17,10 +19,16 @@ export const ArtseyInput: FC<ArtseyInputComponentProps> = (props: ArtseyInputCom
 
     const [isFocused, setFocused] = useState(false);
     const [keyQueue, setKeyQueue] = useState<Array<React.KeyboardEvent<HTMLInputElement>>>([]);
+    const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set());
 
     const [caretPos, setCaretPos] = useState(0);
     const [wordList, setWordList] = useState<Array<string>>(randomWords(25));
     const [enteredKeys, setEnteredKeys] = useState<Array<string>>([]);
+    
+    // Statistics
+    const [wordsTyped, setWordsTyped] = useState(0);
+    const [correctWords, setCorrectWords] = useState(0);
+    const [currentStreak, setCurrentStreak] = useState(0);
     
     const getArtseyValue = useKeyMapper(props.keymap);
 
@@ -41,19 +49,51 @@ export const ArtseyInput: FC<ArtseyInputComponentProps> = (props: ArtseyInputCom
                 ) {
                         setEnteredKeys(prev => [...prev, artsyKey as string]);
                         setCaretPos(caretPos + 1);
+                        
+                        // Check if word is complete
+                        if (artsyKey === "Space" || joinedWordList.split("")[caretPos + 1] === " " || caretPos + 1 >= joinedWordList.length) {
+                            checkWordCompletion();
+                        }
                 }                
                 setKeyQueue([]);
+                setActiveKeys(new Set());
             }
         }, props.keyTimeout);
         return () => clearInterval(interval);
-    }, [keyQueue, enteredKeys, caretPos, getArtseyValue, wordList]);
+    }, [keyQueue, enteredKeys, caretPos, getArtseyValue, wordList, props.keyTimeout]);
+
+    const checkWordCompletion = () => {
+        let joinedWordList = wordList.join(" ");
+        let wordStart = joinedWordList.lastIndexOf(" ", caretPos - 1) + 1;
+        let wordEnd = caretPos;
+        let targetWord = joinedWordList.substring(wordStart, wordEnd).trim();
+        let typedWord = enteredKeys.slice(wordStart, wordEnd).join("").trim();
+        
+        if (targetWord.length > 0 && typedWord.length > 0) {
+            setWordsTyped(prev => prev + 1);
+            if (targetWord === typedWord) {
+                setCorrectWords(prev => prev + 1);
+                setCurrentStreak(prev => prev + 1);
+            } else {
+                setCurrentStreak(0);
+            }
+        }
+    };
 
     const reset = () => {
         setEnteredKeys([]);
         setKeyQueue([]);
         setCaretPos(0);
         setWordList(randomWords(25));
-        wordDivRef.current?.focus()
+        setWordsTyped(0);
+        setCorrectWords(0);
+        setCurrentStreak(0);
+        setActiveKeys(new Set());
+        wordDivRef.current?.focus();
+    }
+
+    const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        setActiveKeys(prev => new Set(Array.from(prev).concat(e.key)));
     }
 
     const onKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -85,28 +125,33 @@ export const ArtseyInput: FC<ArtseyInputComponentProps> = (props: ArtseyInputCom
 
     return (
         <StyledArtseyInput>
-            <div id="word-list" tabIndex={0} onFocus={ () => setFocused(true) } onBlur={ () => setFocused(false) } onKeyUp={ onKeyUp } ref={ wordDivRef }>
-                { !isFocused && <div id="focus-message"><p>Focus Please</p></div> }
+            <VisualKeyboard keymap={props.keymap} activeKeys={activeKeys} />
+            <StatsDisplay 
+                wordsTyped={wordsTyped}
+                correctWords={correctWords}
+                totalWords={wordList.length}
+                currentStreak={currentStreak}
+            />
+            <div id="word-list" tabIndex={0} onFocus={ () => setFocused(true) } onBlur={ () => setFocused(false) } onKeyDown={ onKeyDown } onKeyUp={ onKeyUp } ref={ wordDivRef }>
+                { !isFocused && <div id="focus-message"><p>Click here to start typing</p></div> }
                 { generateWordListElements() }
             </div>
-            <small id="keycode-monitor">Last Registered: { enteredKeys.length !== 0 ? enteredKeys[enteredKeys.length - 1] : "NONE" }</small>
-            <IconButton icon={faSync} onClick={ reset } ></IconButton>            
+            <BottomBar>
+                <small id="keycode-monitor">Last: { enteredKeys.length !== 0 ? enteredKeys[enteredKeys.length - 1] : "NONE" }</small>
+                <IconButton icon={faSync} onClick={ reset } tooltip="Reset test" />
+            </BottomBar>
         </StyledArtseyInput>
     );
 }
 
-const StyledArtseyInput = styled.div`{}
+const StyledArtseyInput = styled.div`
     display:flex;
     justify-content: center;
     flex-direction: column;
     align-items: center;
     align-content: stretch;
     align-items: stretch;
-    margin: 100px 0;
-
-    #logo {
-        width: 150px;
-    }
+    margin: 40px 0;
 
     #word-list {
         position: relative;
@@ -118,20 +163,24 @@ const StyledArtseyInput = styled.div`{}
         -moz-user-select: none; /* Firefox */
         -ms-user-select: none; /* IE10+/Edge */
         user-select: none; /* Standard */
-    }
+        padding: 30px;
+        background: ${p => p.theme.cardBackground};
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-height: 200px;
+        transition: all 0.3s ease;
 
-    #keycode-monitor {
-        text-align: left;
-        font-weight: bold;
-        margin: 10px 0;
-        color: ${ p => p.theme.textColorFaded };
+        &:focus {
+            box-shadow: 0 4px 16px rgba(0, 104, 180, 0.2);
+            border: 2px solid ${p => p.theme.primaryColor};
+        }
     }
 
     #caret {
         display: block;
         width: 0px;
-        border: 1px solid ${ p => p.theme.cursorColor };
-        animation: blinker 2s linear infinite;
+        border: 2px solid ${ p => p.theme.cursorColor };
+        animation: blinker 1.5s linear infinite;
         margin-top: 5px;
     }
 
@@ -146,12 +195,18 @@ const StyledArtseyInput = styled.div`{}
         width: 100%;
         height: 100%;
         text-align: center;
-        background: rgba(255, 255, 255, 0.75);
+        background: rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(4px);
         display: flex;
         justify-content: center;
         align-items: center;
+        border-radius: 12px;
 
-        p { font-weight: bold; }
+        p { 
+            font-weight: 600;
+            color: ${p => p.theme.textColor};
+            font-size: 1.3rem;
+        }
     }
 
     .word {
@@ -160,8 +215,29 @@ const StyledArtseyInput = styled.div`{}
         color: ${ p => p.theme.textColorFaded };
     }
 
-    .correct { color: ${ p => p.theme.textColor }; }
-    .wrong { color: ${ p => p.theme.colorRed }; }
+    .correct { 
+        color: ${ p => p.theme.textColor };
+    }
+    
+    .wrong { 
+        color: ${ p => p.theme.colorRed };
+        background: rgba(255, 74, 74, 0.1);
+        border-radius: 3px;
+    }
+`;
+
+const BottomBar = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    width: 100%;
+
+    #keycode-monitor {
+        text-align: left;
+        font-weight: bold;
+        color: ${ p => p.theme.textColorFaded };
+    }
 `;
 
 export default ArtseyInput;

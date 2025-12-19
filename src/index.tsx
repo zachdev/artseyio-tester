@@ -1,31 +1,33 @@
 import { Reset } from 'styled-reset';
 import { ThemeProvider } from 'styled-components';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import Typography from './components/Typography';
+import { LightTheme, DarkTheme } from './themes';
 
-const Theme = {
-    textColor: "#525252",
-    textColorFaded: "#bebebe",
-    primaryColor: "#0068b4",
-    secondaryColor: "#0098ff",
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 0, 0, 0.1)",
-    colorRed: "#ff4a4a",
-    colorBlue: "#4c5fff",
-    colorGreen: "#2ea169",
-    cursorColor: "#1E1E1E"
-};
+function Root() {
+    const [isDark, setIsDark] = useState(() => {
+        const saved = localStorage.getItem('darkMode');
+        return saved ? JSON.parse(saved) : false;
+    });
 
-ReactDOM.render(
-    <React.StrictMode>
-        <ThemeProvider theme={Theme}>
-            <Reset/>
-            <Typography/>
-            <App />
-        </ThemeProvider>
-    </React.StrictMode>,
-    document.getElementById('root')
-);
+    useEffect(() => {
+        localStorage.setItem('darkMode', JSON.stringify(isDark));
+    }, [isDark]);
+
+    const toggleTheme = () => setIsDark(!isDark);
+
+    return (
+        <React.StrictMode>
+            <ThemeProvider theme={isDark ? DarkTheme : LightTheme}>
+                <Reset/>
+                <Typography/>
+                <App isDark={isDark} onThemeToggle={toggleTheme} />
+            </ThemeProvider>
+        </React.StrictMode>
+    );
+}
+
+ReactDOM.render(<Root />, document.getElementById('root'));
