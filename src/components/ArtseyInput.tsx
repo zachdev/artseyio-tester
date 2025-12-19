@@ -63,13 +63,27 @@ export const ArtseyInput: FC<ArtseyInputComponentProps> = (props: ArtseyInputCom
     }, [keyQueue, enteredKeys, caretPos, getArtseyValue, wordList, props.keyTimeout]);
 
     const checkWordCompletion = () => {
+        // Only check word completion when we've just typed a space or reached end of text
         let joinedWordList = wordList.join(" ");
-        let wordStart = joinedWordList.lastIndexOf(" ", caretPos - 1) + 1;
-        let wordEnd = caretPos;
-        let targetWord = joinedWordList.substring(wordStart, wordEnd).trim();
-        let typedWord = enteredKeys.slice(wordStart, wordEnd).join("").trim();
+        if (caretPos === 0) return;
         
-        if (targetWord.length > 0 && typedWord.length > 0) {
+        // Find the start of the previous word
+        let wordEnd = caretPos - 1;
+        while (wordEnd >= 0 && joinedWordList[wordEnd] === " ") {
+            wordEnd--;
+        }
+        
+        if (wordEnd < 0) return;
+        
+        let wordStart = wordEnd;
+        while (wordStart > 0 && joinedWordList[wordStart - 1] !== " ") {
+            wordStart--;
+        }
+        
+        let targetWord = joinedWordList.substring(wordStart, wordEnd + 1);
+        let typedWord = enteredKeys.slice(wordStart, wordEnd + 1).join("");
+        
+        if (targetWord.length > 0 && typedWord.length === targetWord.length) {
             setWordsTyped(prev => prev + 1);
             if (targetWord === typedWord) {
                 setCorrectWords(prev => prev + 1);
