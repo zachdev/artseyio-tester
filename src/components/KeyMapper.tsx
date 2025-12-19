@@ -91,63 +91,113 @@ export const KeyMapper: FC<KeyMapperComponentProps> = (props: KeyMapperComponent
     );
 }
 
-const StyledKeyMapper = styled.div`{}
+const StyledKeyMapper = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    background: ${p => p.theme.cardBackground};
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
 
     select {
         display: block;
         margin-bottom: 20px;
-        border: 1px solid ${ p => p.theme.borderColor };
-        border-radius: 5px;
-        padding: 10px;
-        background: white;
+        border: 2px solid ${ p => p.theme.borderColor };
+        border-radius: 8px;
+        padding: 12px 16px;
+        background: ${p => p.theme.keyBackground};
         color: ${ p => p.theme.textColor };
         font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 200px;
+
+        &:hover {
+            border-color: ${p => p.theme.primaryColor};
+        }
+
+        &:focus {
+            outline: none;
+            border-color: ${p => p.theme.primaryColor};
+            box-shadow: 0 0 0 3px rgba(0, 104, 180, 0.1);
+        }
     }
 
     #artsey-timeout {
-        margin-top: 15px;        
+        margin-top: 20px;        
         margin-bottom: 15px;
         display: flex;
         align-items: center;
+        gap: 10px;
+        background: ${p => p.theme.keyBackground};
+        padding: 15px 20px;
+        border-radius: 8px;
+
+        span {
+            font-weight: 500;
+            color: ${p => p.theme.textColor};
+        }
 
         input {
-            max-width: 75px;
-            margin-left: 15px;
-            margin-right: 5px;
-            border: 1px solid ${ p => p.theme.borderColor };
-            border-radius: 5px;
+            max-width: 80px;
+            border: 2px solid ${ p => p.theme.borderColor };
+            border-radius: 6px;
             padding: 10px;
-            background: white;
+            background: ${p => p.theme.backgroundColor};
             color: ${ p => p.theme.textColor };
             font-size: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+
+            &:focus {
+                outline: none;
+                border-color: ${p => p.theme.primaryColor};
+                box-shadow: 0 0 0 3px rgba(0, 104, 180, 0.1);
+            }
         }
     }
 
     #key-map {
         display: inline-grid;
-        gap: 10px;        
+        gap: 12px;        
         margin-bottom: 25px;
     }
 
     .key {
-        border: 1px solid ${ p => p.theme.borderColor };
-        border-radius: 5px;
-        width: 50px;
-        height: 50px;
-        padding: 10px 5px;
+        border: 2px solid ${ p => p.theme.borderColor };
+        border-radius: 8px;
+        width: 60px;
+        height: 60px;
+        padding: 8px 5px;
         font-weight: bold;
         text-align: center;
+        background: ${p => p.theme.keyBackground};
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
 
         input {
             width: 100%;
             box-sizing: border-box;
             border: 1px solid ${ p => p.theme.borderColor };
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             padding: 5px;
+            border-radius: 4px;
+            background: ${p => p.theme.backgroundColor};
+            color: ${p => p.theme.textColor};
+            transition: all 0.2s ease;
+
+            &:focus {
+                outline: none;
+                border-color: ${p => p.theme.primaryColor};
+            }
         }
     }
 

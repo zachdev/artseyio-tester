@@ -12,5 +12,7 @@ declare module 'styled-components' {
         colorBlue: string;
         colorGreen: string;
         cursorColor: string;
+        cardBackground: string;
+        keyBackground: string;
     }
 }
